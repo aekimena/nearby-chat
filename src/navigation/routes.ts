@@ -9,4 +9,5 @@ export const screenNames = {
   clientDetails: "clientDetails",
   clientChat: "clientChat",
   host: "host",
+  client: "client",
 } as const;

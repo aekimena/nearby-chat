@@ -12,6 +12,9 @@ import {
   selectPort,
 } from "../storeServices/host/hostReducer";
 import { addClient } from "../storeServices/host/actions";
+import { selectUser } from "../storeServices/auth/authReducer";
+import { selectMessages } from "../storeServices/messages/chatReducer";
+import { Buffer } from "buffer";
 
 const ConnectionContext = createContext(null);
 
@@ -21,15 +24,19 @@ export const ConnectionProvider = ({ children }) => {
   const PORT = useSelector(selectPort);
   const INVITE_CODE = useSelector(selectInviteCode);
   const CLIENTS = useSelector(selectClients);
+  const MESSAGES = useSelector(selectMessages);
+
+  const user = useSelector(selectUser);
 
   const dispatch = useDispatch();
 
   const [server, setServer] = useState(null);
   const [client, setClient] = useState(null);
-  const [messages, setMessages] = useState([]);
-  const [ip, setIp] = useState("0.0.0.0");
-  const [myIp, setMyIp] = useState("");
-  const [netDetails, setDetails] = useState();
+  const [serverSocket, setServerSocket] = useState(null);
+  // const [messages, setMessages] = useState([]);
+  // const [ip, setIp] = useState("0.0.0.0");
+  // const [myIp, setMyIp] = useState("");
+  // const [netDetails, setDetails] = useState();
 
   // Create server
   // const startServer = () => {
@@ -75,8 +82,24 @@ export const ConnectionProvider = ({ children }) => {
     // });
 
     const newServer = TcpSocket.createServer(function (socket) {
+      setServerSocket(socket);
       socket.on("data", (data) => {
-        socket.write("Echo server " + data);
+        // socket.write("Echo server " + data);
+        // console.log("message was received to server ", data);
+
+        const decoded = Buffer.from(data).toString("utf-8");
+
+        const json = JSON.parse(decoded);
+        if (json?.type == "message") {
+          dispatch({ type: "newMessage", payload: json });
+        } else {
+          console.log("New message from client: ", json);
+        }
+
+        // const message = JSON.parse(data.toString());
+        // if (message.type == "join_request") {
+        //   console.log("User wants to join; ", message);
+        // }
       });
 
       socket.on("error", (error) => {
@@ -84,12 +107,14 @@ export const ConnectionProvider = ({ children }) => {
       });
 
       socket.on("close", (error) => {
-        console.log("Closed connection with ", socket.address());
+        console.log("Closed connection with ", socket.address(), error);
       });
     }).listen({ port: PORT, host: "0.0.0.0" }, () => {
       console.log(`✅ Server running on port ${PORT}`);
       console.log(`🔑 Join Code: ${INVITE_CODE}`);
     });
+
+    setServer(newServer);
 
     newServer.on("error", (error) => {
       console.log("An error ocurred with the server", error);
@@ -157,51 +182,155 @@ export const ConnectionProvider = ({ children }) => {
 
     // setServer(newServer);
 
-    return { server: newServer, approveClient };
+    return { server, approveClient };
   };
 
   // Connect as client
-  const connectToServer = () => {
-    const newClient = TcpSocket.createConnection(
-      { port: 5000, host: ip },
-      () => {
-        console.log("Connected to server:", ip);
-      }
-    );
+  const connectToServer = ({ port, host }: { port: string; host: string }) => {
+    // const newClient = TcpSocket.createConnection(
+    //   { port: Number(port), host },
+    //   () => {
+    //     console.log("Connected to server:", host);
+    //   }
+    // );
 
-    newClient.on("data", (data) => {
-      const msg = data.toString();
-      console.log("Received:", msg);
-      setMessages((prev) => [...prev, { from: "server", text: msg }]);
+    // // Send join request
+    // const joinRequest = JSON.stringify({
+    //   type: "join_request",
+    //   name: user.name,
+    //   image: user.image,
+    //   deviceId: user.deviceId,
+    // });
+    // newClient.write(joinRequest);
+
+    // newClient.on("data", (data) => {
+    //   const msg = data.toString();
+    //   console.log("Received:", msg);
+    //   setMessages((prev) => [...prev, { from: "server", text: msg }]);
+    // });
+
+    // newClient.on("error", (err) => console.log("Client error:", err));
+    // newClient.on("close", () => console.log("Connection closed"));
+
+    // setClient(newClient);
+
+    const options = {
+      port: Number(port),
+      // host: "127.0.0.1",
+      // localAddress: "127.0.0.1",
+      host,
+      // localAddress: host,
+      // reuseAddress: true,
+      // localPort: 20000,
+      // interface: "wifi",
+    };
+
+    // Create socket
+    const client = TcpSocket.createConnection(options, () => {
+      console.log("connected to server!");
+
+      // // Write on the socket
+      // client.write("Hello server!");
+
+      // // Close socket
+      // client.destroy();
     });
 
-    newClient.on("error", (err) => console.log("Client error:", err));
-    newClient.on("close", () => console.log("Connection closed"));
+    setClient(client);
 
-    setClient(newClient);
+    client.on("data", function (data) {
+      // console.log("message was received to client: ", data);
+      //       const message = Buffer.from(data).toString("utf-8");
+      // console.log("Message received by client:", message);
+
+      // const decoded = Buffer.from(data).toString("utf-8");
+      // try {
+      //   const json = JSON.parse(decoded);
+      //   console.log("Received:", json);
+      // } catch {
+      //   console.log("Received (raw):", decoded);
+      // }
+      const decoded = Buffer.from(data).toString("utf-8");
+
+      const json = JSON.parse(decoded);
+      if (json?.type == "message") {
+        dispatch({ type: "newMessage", payload: json });
+      } else {
+        console.log("New message from server: ", json);
+      }
+    });
+
+    client.on("error", function (error) {
+      console.log(error);
+    });
+
+    client.on("close", function () {
+      console.log("Connection closed!");
+    });
   };
 
   // Send message
   const sendMessage = (text) => {
-    if (client) client.write(text);
-    if (server) {
-      // For server, echo message back to connected clients (if any)
-      server.connections.forEach((s) => s.write(text));
-    }
-    setMessages((prev) => [...prev, { from: "me", text }]);
+    if (client)
+      client.write(
+        JSON.stringify({
+          name: user?.name,
+          message: text,
+          deviceId: user?.deviceId,
+          id: Date.now().toString(),
+          type: "message",
+        })
+      );
+    // if (serverSocket) {
+    // For server, echo message back to connected clients (if any)
+    // server.connections.forEach((s) => s.write(text));
+    // console.log(server);
+    if (serverSocket)
+      serverSocket.write(
+        JSON.stringify({
+          name: user?.name,
+          message: text,
+          deviceId: user?.deviceId,
+          id: Date.now().toString(),
+          type: "message",
+        })
+      );
+    // }
+    // setMessages((prev) => [...prev, { from: "me", text }]);
+    dispatch({
+      type: "newMessage",
+      payload: {
+        name: user?.name,
+        message: text,
+        deviceId: user?.deviceId,
+        id: Date.now().toString(),
+        type: "message",
+      },
+    });
+    // dispatch({
+    //   type: "newMessage",
+    //   payload: {
+    //     id: Date.now().toString(),
+    //     message: text,
+    //     name: user?.name,
+    //     deviceId: user?.deviceId,
+    //   },
+    // });
   };
 
   return (
     <ConnectionContext.Provider
       value={{
-        myIp,
-        ip,
-        setIp,
+        // myIp,
+        // ip,
+        // setIp,
         startServer,
         connectToServer,
         sendMessage,
-        messages,
-        details,
+        client,
+        server,
+        // messages,
+        // details,
       }}
     >
       {children}

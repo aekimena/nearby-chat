@@ -1,5 +1,5 @@
 import { Button, Image, Pressable, StyleSheet, Text, View } from "react-native";
-import React from "react";
+import React, { useEffect } from "react";
 
 import { ScreenLayout } from "../../components/layout/ScreenLayout";
 import { useDispatch, useSelector } from "react-redux";
@@ -14,6 +14,7 @@ import { useNavigation } from "@react-navigation/native";
 import { screenNames } from "../../navigation/routes";
 import { generateInviteCode, generatePort } from "../../utils/networkUtils";
 import { useConnection } from "../../contexts/ConnectionContext";
+import { NetworkInfo } from "react-native-network-info";
 
 const HomeScreen = () => {
   const user = useSelector(selectUser);
@@ -31,24 +32,24 @@ const HomeScreen = () => {
     dispatch({ type: "setPort", payload: PORT });
     dispatch({ type: "setInviteCode", payload: INVITE_CODE });
 
-    // startServer(
-    //   () => {},
-    //   () => {}
-    // );
-
     navigation.navigate(screenNames.host);
-
-    // setTimeout(() => {
-    // startServer(
-    //   () => {},
-    //   () => {}
-    // );
-    // }, 1000);
-
-    // setTimeout(() => {
-    //   navigation.navigate(screenNames.host);
-    // }, 2000);
   };
+
+  const onPressJoin = () => {
+    navigation.navigate(screenNames.client);
+  };
+
+  // useEffect(() => {
+  //   // Get Local IP
+  //   NetworkInfo.getIPAddress().then((ipAddress) => {
+  //     console.log("IP Address: ", ipAddress);
+  //   });
+
+  //   // Get IPv4 IP (priority: WiFi first, cellular second)
+  //   NetworkInfo.getIPV4Address().then((ipv4Address) => {
+  //     console.log("IPV4 Address: ", ipv4Address);
+  //   });
+  // }, []);
 
   return (
     <ScreenLayout>
@@ -71,7 +72,7 @@ const HomeScreen = () => {
             title="Join a Connection"
             subtitle="Connect to a nearby host"
             warningText="Connect to the host’s Wi-Fi network first"
-            onPress={() => console.log("Join pressed")}
+            onPress={() => onPressJoin()}
           />
         </View>
       </View>

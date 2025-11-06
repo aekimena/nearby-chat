@@ -1,6 +1,6 @@
 const initialState = {
   clients: [],
-  hostMessages: [], // {message: '', deviceId: '', socket: '', name: '',}
+  // hostMessages: [], // {message: '', deviceId: '', socket: '', name: '',}
   port: null,
   inviteCode: null,
   isConnected: false,
@@ -21,11 +21,11 @@ const hostReducer = (state = initialState, action) => {
       return { ...state, port: action.payload };
     case "setInviteCode":
       return { ...state, inviteCode: action.payload };
-    case "newHostMessages":
-      return {
-        ...state,
-        hostMessages: [...state.hostMessages, action.payload],
-      };
+    // case "newHostMessages":
+    //   return {
+    //     ...state,
+    //     hostMessages: [...state.hostMessages, action.payload],
+    //   };
     default:
       return state;
   }
@@ -34,5 +34,5 @@ const hostReducer = (state = initialState, action) => {
 export const selectClients = (state) => state.host.clients;
 export const selectPort = (state) => state.host.port;
 export const selectInviteCode = (state) => state.host.inviteCode;
-export const selectHostMessages = (state) => state.host.hostMessages;
+// export const selectHostMessages = (state) => state.host.hostMessages;
 export default hostReducer;

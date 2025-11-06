@@ -1,10 +1,9 @@
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { colors } from "../../constants/colors";
 import { Vspacer } from "../../components/Vspacer";
 import { LabelText } from "../../components/LabelText";
 import { globalStyles } from "../../constants/styles";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useConnection } from "../../contexts/ConnectionContext";
 import { useSelector } from "react-redux";
 import {
@@ -12,45 +11,30 @@ import {
   selectInviteCode,
   selectPort,
 } from "../../storeServices/host/hostReducer";
-
-const DetailsBox = ({
-  label,
-  title,
-  onCopy,
-}: {
-  label: string;
-  title: string;
-  onCopy: () => void;
-}) => {
-  return (
-    <View style={{ gap: 10 }}>
-      <LabelText title={label} />
-      <View style={styles.box}>
-        <LabelText title={title} style={{ ...globalStyles.font14Semibold }} />
-        <Pressable onPress={onCopy}>
-          <MaterialIcons
-            name="file-copy"
-            size={16}
-            color={colors.iconPrimary}
-          />
-        </Pressable>
-      </View>
-    </View>
-  );
-};
+// import NetInfo from "@react-native-community/netinfo";
+import { NetworkInfo } from "react-native-network-info";
+import { DetailsBox } from "../../components/chat/DetailsBox";
 
 const HostDetails = () => {
   const { startServer } = useConnection();
 
-  const { server, approveClient } = startServer();
+  // const { approveClient } = startServer();
 
   const PORT = useSelector(selectPort);
   const INVITE_CODE = useSelector(selectInviteCode);
   const CLIENTS = useSelector(selectClients);
 
-  // useEffect(() => {
-  //   startServer();
-  // }, []);
+  const [IP, setIp] = useState("");
+
+  useEffect(() => {
+    // startServer();
+    // Get IPv4 IP (priority: WiFi first, cellular second)
+    NetworkInfo.getIPAddress().then((ipv4Address) => {
+      console.log("IPV4 Address: ", ipv4Address);
+      setIp(ipv4Address);
+    });
+    startServer();
+  }, []);
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.white }}>
@@ -67,26 +51,11 @@ const HostDetails = () => {
           />
         </View>
         <Vspacer size={20} />
-        {/* <View style={{ gap: 10 }}>
-          <LabelText title="IP Address:" />
-          <View style={styles.box}>
-            <LabelText
-              title="192.168.43.1"
-              style={{ ...globalStyles.font14Semibold }}
-            />
-            <Pressable>
-              <MaterialIcons
-                name="file-copy"
-                size={16}
-                color={colors.iconPrimary}
-              />
-            </Pressable>
-          </View>
-        </View> */}
+
         <View style={{ gap: 15 }}>
           <DetailsBox
             label="IP Address:"
-            title="192.168.43.1"
+            title={IP || "..."}
             onCopy={() => {}}
           />
           <DetailsBox label="Port:" title={PORT} onCopy={() => {}} />
@@ -103,11 +72,4 @@ const HostDetails = () => {
 
 export default HostDetails;
 
-const styles = StyleSheet.create({
-  box: {
-    padding: 15,
-    borderRadius: 10,
-    backgroundColor: colors.card,
-    ...globalStyles.flexRowBtw,
-  },
-});
+const styles = StyleSheet.create({});

@@ -67,7 +67,7 @@ import { useConnection } from "../../contexts/ConnectionContext";
 //   },
 // ];
 
-const HostChatScreen = () => {
+const ClientChatScreen = () => {
   const insets = useSafeAreaInsets();
   const MESSAGES = useSelector(selectMessages);
 
@@ -145,7 +145,7 @@ const HostChatScreen = () => {
   );
 };
 
-export default HostChatScreen;
+export default ClientChatScreen;
 
 const styles = StyleSheet.create({
   chatHeader: {
