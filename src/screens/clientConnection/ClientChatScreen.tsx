@@ -85,7 +85,7 @@ const ClientChatScreen = () => {
   };
   return (
     <View style={{ flex: 1, backgroundColor: colors.white }}>
-      <View style={styles.chatHeader}>
+      {/* <View style={styles.chatHeader}>
         <View style={{ flex: 1, ...globalStyles.flexRow, gap: 10 }}>
           <View style={{ height: 50, width: 50, borderRadius: 50 }}>
             <Image
@@ -110,7 +110,7 @@ const ClientChatScreen = () => {
             />
           </View>
         </View>
-      </View>
+      </View> */}
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={"height"}

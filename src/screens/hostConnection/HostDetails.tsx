@@ -5,7 +5,7 @@ import { Vspacer } from "../../components/Vspacer";
 import { LabelText } from "../../components/LabelText";
 import { globalStyles } from "../../constants/styles";
 import { useConnection } from "../../contexts/ConnectionContext";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   selectClients,
   selectInviteCode,
@@ -26,6 +26,8 @@ const HostDetails = () => {
 
   const [IP, setIp] = useState("");
 
+  const dispatch = useDispatch();
+
   useEffect(() => {
     // startServer();
     // Get IPv4 IP (priority: WiFi first, cellular second)
@@ -34,6 +36,8 @@ const HostDetails = () => {
       setIp(ipv4Address);
     });
     startServer();
+
+    dispatch({ type: "setApprovalModalVisible", payload: true });
   }, []);
 
   return (

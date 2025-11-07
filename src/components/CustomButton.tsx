@@ -16,11 +16,13 @@ export const CustomButton = ({
   onPress,
   buttonStyle,
   textStyle,
+  icon,
 }: {
   title: string;
   onPress: () => void;
   buttonStyle?: ViewStyle;
   textStyle?: TextStyle;
+  icon?: React.ReactNode;
 }) => {
   return (
     <TouchableOpacity
@@ -31,10 +33,16 @@ export const CustomButton = ({
         borderRadius: 10,
         backgroundColor: colors.primary,
         ...globalStyles.allCenter,
+        ...globalStyles.flexRow,
+        gap: 5,
         ...buttonStyle,
       }}
     >
-      <LabelText title={title} style={{ color: "#fff", ...textStyle }} />
+      <LabelText
+        title={title}
+        style={{ color: "#fff", ...globalStyles.font16Semibold, ...textStyle }}
+      />
+      {icon && icon}
     </TouchableOpacity>
   );
 };

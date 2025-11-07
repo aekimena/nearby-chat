@@ -8,34 +8,38 @@ import { ScreenLayout } from "../components/layout/ScreenLayout";
 import { globalStyles } from "../constants/styles";
 import { colors } from "../constants/colors";
 import { LeftIconHeader } from "../components/LeftIconHeader";
+import { ApprovalModal } from "../modals/ApprovalModal";
 
 const Tab = createMaterialTopTabNavigator();
 
 const HostConnectionNavigator = () => {
   return (
     <ScreenLayout>
-      <LeftIconHeader title="Host a Connection" />
-      <Tab.Navigator
-        screenOptions={{
-          tabBarLabelStyle: { ...globalStyles.font16Semibold },
-          tabBarStyle: { backgroundColor: colors.white },
-          tabBarIndicatorStyle: { backgroundColor: colors.primary },
-          swipeEnabled: false,
-          tabBarActiveTintColor: colors.textPrimary,
-          tabBarInactiveTintColor: colors.textSecondary,
-        }}
-      >
-        <Tab.Screen
-          name={screenNames.hostDetails}
-          component={HostDetails}
-          options={{ title: "Details" }}
-        />
-        <Tab.Screen
-          name={screenNames.hostChat}
-          component={HostChatScreen}
-          options={{ title: "Chat" }}
-        />
-      </Tab.Navigator>
+      <>
+        <LeftIconHeader title="Host a Connection" />
+        <Tab.Navigator
+          screenOptions={{
+            tabBarLabelStyle: { ...globalStyles.font16Semibold },
+            tabBarStyle: { backgroundColor: colors.white },
+            tabBarIndicatorStyle: { backgroundColor: colors.primary },
+            swipeEnabled: false,
+            tabBarActiveTintColor: colors.textPrimary,
+            tabBarInactiveTintColor: colors.textSecondary,
+          }}
+        >
+          <Tab.Screen
+            name={screenNames.hostDetails}
+            component={HostDetails}
+            options={{ title: "Details" }}
+          />
+          <Tab.Screen
+            name={screenNames.hostChat}
+            component={HostChatScreen}
+            options={{ title: "Chat" }}
+          />
+        </Tab.Navigator>
+        <ApprovalModal />
+      </>
     </ScreenLayout>
   );
 };

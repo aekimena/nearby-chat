@@ -3,10 +3,11 @@ import React, { createContext, useContext, useState } from "react";
 import TcpSocket from "react-native-tcp-socket";
 // import * as NetworkInfo from "expo-network";
 import { useNetInfo } from "@react-native-community/netinfo";
-import { Alert, PermissionsAndroid } from "react-native";
+import { Alert, PermissionsAndroid, ToastAndroid } from "react-native";
 import NetInfo from "@react-native-community/netinfo";
 import { useDispatch, useSelector } from "react-redux";
 import {
+  selectAcceptedClients,
   selectClients,
   selectInviteCode,
   selectPort,
@@ -25,6 +26,7 @@ export const ConnectionProvider = ({ children }) => {
   const INVITE_CODE = useSelector(selectInviteCode);
   const CLIENTS = useSelector(selectClients);
   const MESSAGES = useSelector(selectMessages);
+  const ACCEPTED_CLIENTS = useSelector(selectAcceptedClients);
 
   const user = useSelector(selectUser);
 
@@ -90,6 +92,32 @@ export const ConnectionProvider = ({ children }) => {
         const decoded = Buffer.from(data).toString("utf-8");
 
         const json = JSON.parse(decoded);
+
+        if (json?.type == "join_request") {
+          // Ask for approval
+          const requestingClient = socket.address(); // { port: 12346, family: 'IPv4', address: '127.0.0.1' }
+          const requestingClientData = { ...requestingClient, ...json };
+          // show modal to accept with the client data
+          console.log("Client wants to connect: ", requestingClientData);
+
+          return;
+        }
+
+        if (json?.type == "enter_code") {
+          if (json?.code?.trim() == INVITE_CODE) {
+            // add client
+          }
+          return;
+        }
+
+        if (
+          json?.type == "message" &&
+          !CLIENTS.find((i) => i.deviceId == json?.deviceId)
+        ) {
+          // remome client
+          return;
+        }
+
         if (json?.type == "message") {
           dispatch({ type: "newMessage", payload: json });
         } else {
@@ -228,6 +256,21 @@ export const ConnectionProvider = ({ children }) => {
     // Create socket
     const client = TcpSocket.createConnection(options, () => {
       console.log("connected to server!");
+      dispatch({
+        type: "setClientConnected",
+        payload: {},
+      });
+
+      client.write(
+        JSON.stringify({
+          name: user?.name,
+          image: user?.image,
+          // message: text,
+          deviceId: user?.deviceId,
+          id: Date.now().toString(),
+          type: "join_request",
+        })
+      );
 
       // // Write on the socket
       // client.write("Hello server!");
@@ -262,6 +305,7 @@ export const ConnectionProvider = ({ children }) => {
 
     client.on("error", function (error) {
       console.log(error);
+      ToastAndroid.show("Something went wrong!", ToastAndroid.BOTTOM);
     });
 
     client.on("close", function () {

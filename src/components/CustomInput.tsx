@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
     ...globalStyles.flexRow,
     gap: 5,
 
-    borderRadius: 50,
+    borderRadius: 10,
     height: 50,
     width: "100%",
     paddingHorizontal: 15,
