@@ -1,5 +1,11 @@
 // ConnectionContext.tsx
-import React, { createContext, useContext, useState } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import TcpSocket from "react-native-tcp-socket";
 // import * as NetworkInfo from "expo-network";
 import { useNetInfo } from "@react-native-community/netinfo";
@@ -16,6 +22,7 @@ import { addClient } from "../storeServices/host/actions";
 import { selectUser } from "../storeServices/auth/authReducer";
 import { selectMessages } from "../storeServices/messages/chatReducer";
 import { Buffer } from "buffer";
+import store from "../store/configureStore";
 
 const ConnectionContext = createContext(null);
 
@@ -24,7 +31,7 @@ export const ConnectionProvider = ({ children }) => {
 
   const PORT = useSelector(selectPort);
   const INVITE_CODE = useSelector(selectInviteCode);
-  const CLIENTS = useSelector(selectClients);
+  // const CLIENTS = useSelector(selectClients);
   const MESSAGES = useSelector(selectMessages);
   const ACCEPTED_CLIENTS = useSelector(selectAcceptedClients);
 
@@ -36,7 +43,7 @@ export const ConnectionProvider = ({ children }) => {
   const [client, setClient] = useState(null);
   const [serverSocket, setServerSocket] = useState(null);
 
-  const [clientSeekingApproval, setClientSeekingApproval] = useState(null);
+  // const [clientSeekingApproval, setClientSeekingApproval] = useState(null);
   // const [messages, setMessages] = useState([]);
   // const [ip, setIp] = useState("0.0.0.0");
   // const [myIp, setMyIp] = useState("");
@@ -63,28 +70,7 @@ export const ConnectionProvider = ({ children }) => {
   //   setServer(newServer);
   // };
 
-  const startServer = (onJoinRequest, onClientLeave) => {
-    // const newServer = TcpSocket.createServer((socket) => {
-    //   let clientProfile = null;
-
-    //   socket.once("data", (data) => {
-    //     try {
-    //       const message = JSON.parse(data.toString());
-    //       if (message.type === "PROFILE") {
-    //         clientProfile = { ...message, socket };
-    //         console.log("👤 Connection request from:", clientProfile.name);
-    //         socket.write("WAIT_FOR_APPROVAL");
-
-    //         // Notify the UI (so you can show name/image)
-    //         onJoinRequest(clientProfile, socket);
-    //       }
-    //     } catch (e) {
-    //       console.log("Invalid initial data from client");
-    //       socket.destroy();
-    //     }
-    //   });
-    // });
-
+  const startServer = () => {
     const newServer = TcpSocket.createServer(function (socket) {
       setServerSocket(socket);
       socket.on("data", (data) => {
@@ -101,7 +87,11 @@ export const ConnectionProvider = ({ children }) => {
           const requestingClientData = { ...requestingClient, ...json };
           // show modal to accept with the client data
           console.log("Client wants to connect: ", requestingClientData);
-          setClientSeekingApproval(requestingClientData);
+          // setClientSeekingApproval(requestingClientData);
+          dispatch({
+            type: "setClientSeekingApproval",
+            payload: requestingClientData,
+          });
           dispatch({ type: "setApprovalModalVisible", payload: true });
 
           return;
@@ -111,24 +101,26 @@ export const ConnectionProvider = ({ children }) => {
           if (json?.code?.trim() == INVITE_CODE) {
             // add client
 
-            console.log("about to save client: ", clientSeekingApproval);
+            const storedClient = store.getState().host.clientSeekingApproval;
 
-            dispatch({ type: "addClient", payload: clientSeekingApproval });
+            console.log("about to save client: ", storedClient);
+
+            dispatch({ type: "addClient", payload: storedClient });
 
             socket.write(JSON.stringify({ type: "authenticated" }));
+          } else {
+            socket.write(
+              JSON.stringify({
+                type: "unauthorized",
+                message: "Invalid access code!",
+              })
+            );
           }
           return;
         }
 
-        // if (
-        //   json?.type == "message" &&
-        //   !CLIENTS.find((i) => i.deviceId == json?.deviceId)
-        // ) {
-        //   // remome client
-        //   return;
-        // }
-
         if (json?.type == "message") {
+          const CLIENTS = store.getState().host.authenticatedClients;
           console.log("all clients: ", CLIENTS);
 
           const clientExists = CLIENTS.findIndex(
@@ -137,6 +129,13 @@ export const ConnectionProvider = ({ children }) => {
 
           if (clientExists == -1) {
             // remove client
+            socket.write(
+              JSON.stringify({
+                type: "unauthorized",
+                message: "Access denied!",
+              })
+            );
+            socket.destroy();
             console.log("Client doesnt exist");
 
             return;
@@ -145,11 +144,6 @@ export const ConnectionProvider = ({ children }) => {
         } else {
           console.log("New message from client: ", json);
         }
-
-        // const message = JSON.parse(data.toString());
-        // if (message.type == "join_request") {
-        //   console.log("User wants to join; ", message);
-        // }
       });
 
       socket.on("error", (error) => {
@@ -164,8 +158,6 @@ export const ConnectionProvider = ({ children }) => {
       console.log(`🔑 Join Code: ${INVITE_CODE}`);
     });
 
-    // setServer(newServer);
-
     newServer.on("error", (error) => {
       console.log("An error ocurred with the server", error);
     });
@@ -174,41 +166,6 @@ export const ConnectionProvider = ({ children }) => {
       console.log("Server closed connection");
     });
 
-    // const approveClient = (clientProfile) => {
-    //   const socket = clientProfile.socket;
-    //   socket.write("ENTER_CODE");
-
-    //   socket.on("data", (data) => {
-    //     const message = data.toString();
-
-    //     if (message.startsWith("CODE:")) {
-    //       const entered = message.split(":")[1].trim();
-
-    //       if (entered === INVITE_CODE) {
-    //         socket.write("APPROVED");
-    //         // c.push(clientProfile);
-    //         dispatch(addClient(clientProfile));
-
-    //         broadcast(`🟢 ${clientProfile.name} joined the chat`, socket);
-
-    //         socket.on("data", (msg) => {
-    //           const text = msg.toString();
-    //           broadcast(`${clientProfile.name}: ${text}`, socket);
-    //         });
-
-    //         socket.on("close", () => {
-    //           removeClient(socket);
-    //           onClientLeave(clientProfile);
-    //           broadcast(`🔴 ${clientProfile.name} left the chat`, socket);
-    //         });
-    //       } else {
-    //         socket.write("REJECTED");
-    //         socket.destroy();
-    //       }
-    //     }
-    //   });
-    // };
-
     const removeClient = (socket) => {
       // const index = clients.findIndex((c) => c.socket === socket);
       // if (index !== -1) clients.splice(index, 1);
@@ -216,23 +173,13 @@ export const ConnectionProvider = ({ children }) => {
     };
 
     const broadcast = (message, sender) => {
+      const CLIENTS = store.getState().host.authenticatedClients;
       CLIENTS.forEach((c) => {
         if (c.socket !== sender) {
           c.socket.write(message);
         }
       });
     };
-
-    // newServer.listen({ port: PORT, host: "0.0.0.0" }, () => {
-    //   console.log(`✅ Server running on port ${PORT}`);
-    //   console.log(`🔑 Join Code: ${INVITE_CODE}`);
-    // });
-
-    // newServer.on("error", (err) => console.error("Server error:", err));
-
-    // setServer(newServer);
-
-    // return { approveClient };
   };
 
   // Connect as client
@@ -325,7 +272,8 @@ export const ConnectionProvider = ({ children }) => {
       }
       if (json?.type == "authenticated") {
         // dispatch({ type: "setClientAccepted", payload: "true" });
-        dispatch({ type: "setAuthModalVisible", payload: false });
+        // dispatch({ type: "setAuthModalVisible", payload: false });
+        dispatch({ type: "setClientAuthenticated", payload: true });
         ToastAndroid.show(
           "Welcome to the chat! you have been invited",
           ToastAndroid.BOTTOM
@@ -411,7 +359,7 @@ export const ConnectionProvider = ({ children }) => {
         sendMessage,
         client,
         serverSocket,
-        clientSeekingApproval,
+        // clientSeekingApproval,
         // messages,
         // details,
       }}

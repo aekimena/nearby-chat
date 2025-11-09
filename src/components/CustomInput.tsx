@@ -23,6 +23,7 @@ export const CustomInput = ({
   keyboardType,
   multiLine,
   maxLength,
+  disabled,
 }: {
   placeholder?: string;
   label?: string;
@@ -34,6 +35,7 @@ export const CustomInput = ({
   keyboardType?: KeyboardType;
   multiLine?: boolean;
   maxLength?: number;
+  disabled?: boolean;
 }) => {
   return (
     <View>
@@ -75,6 +77,7 @@ export const CustomInput = ({
             multiline={multiLine}
             maxLength={maxLength || undefined}
             keyboardType={keyboardType || "default"}
+            editable={!disabled}
           />
         </View>
       </View>

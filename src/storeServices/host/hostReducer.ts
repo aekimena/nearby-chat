@@ -6,6 +6,7 @@ const initialState = {
   isConnected: false,
   acceptedClients: [],
   approvalModalVisible: false,
+  clientSeekingApproval: null,
 };
 
 const hostReducer = (state = initialState, action) => {
@@ -32,6 +33,7 @@ const hostReducer = (state = initialState, action) => {
           (i) => i.socket !== action.payload
         ),
       };
+
     case "setPort":
       return { ...state, port: action.payload };
     case "setInviteCode":
@@ -43,6 +45,10 @@ const hostReducer = (state = initialState, action) => {
     //   };
     case "setApprovalModalVisible":
       return { ...state, approvalModalVisible: action.payload };
+    case "setClientSeekingApproval":
+      return { ...state, clientSeekingApproval: action.payload };
+    case "resetHost":
+      return initialState;
     default:
       return state;
   }
@@ -54,5 +60,7 @@ export const selectPort = (state) => state.host.port;
 export const selectInviteCode = (state) => state.host.inviteCode;
 export const selectApprovalModalVisible = (state) =>
   state.host.approvalModalVisible;
+export const selectClientSeekingApproval = (state) =>
+  state.host.clientSeekingApproval;
 // export const selectHostMessages = (state) => state.host.hostMessages;
 export default hostReducer;

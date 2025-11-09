@@ -17,7 +17,7 @@ const clientReducer = (state = initialState, action) => {
     case "setClientAccepted":
       return { ...state, clientAccepted: "true" };
     case "setClientAuthenticated":
-      return { ...state, clientAuthenticated: "true", authModalVisible: false };
+      return { ...state, clientAuthenticated: true, authModalVisible: false };
     case "setAuthModalVisible":
       return { ...state, authModalVisible: action.payload };
     case "resetClient":

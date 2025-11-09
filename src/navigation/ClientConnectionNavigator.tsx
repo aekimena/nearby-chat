@@ -9,10 +9,13 @@ import { LeftIconHeader } from "../components/LeftIconHeader";
 import ClientDetails from "../screens/clientConnection/ClientDetails";
 import ClientChatScreen from "../screens/clientConnection/ClientChatScreen";
 import { AuthenticationModal } from "../modals/AuthenticationModal";
+import { useSelector } from "react-redux";
+import { selectClientAuthenticated } from "../storeServices/client/clientReducer";
 
 const Tab = createMaterialTopTabNavigator();
 
 const ClientConnectionNavigator = () => {
+  const clientAuthenticated = useSelector(selectClientAuthenticated);
   return (
     <ScreenLayout>
       <>
@@ -32,11 +35,13 @@ const ClientConnectionNavigator = () => {
             component={ClientDetails}
             options={{ title: "Details" }}
           />
-          <Tab.Screen
-            name={screenNames.clientChat}
-            component={ClientChatScreen}
-            options={{ title: "Chat" }}
-          />
+          {clientAuthenticated && (
+            <Tab.Screen
+              name={screenNames.clientChat}
+              component={ClientChatScreen}
+              options={{ title: "Chat" }}
+            />
+          )}
         </Tab.Navigator>
         <AuthenticationModal />
       </>

@@ -1,5 +1,12 @@
-import { StyleSheet, Text, ToastAndroid, View } from "react-native";
-import React, { useState } from "react";
+import {
+  Alert,
+  BackHandler,
+  StyleSheet,
+  Text,
+  ToastAndroid,
+  View,
+} from "react-native";
+import React, { useCallback, useEffect, useState } from "react";
 import { colors } from "../../constants/colors";
 import { Vspacer } from "../../components/Vspacer";
 import { LabelText } from "../../components/LabelText";
@@ -8,13 +15,20 @@ import { CustomInput } from "../../components/CustomInput";
 import { CustomButton } from "../../components/CustomButton";
 import { useConnection } from "../../contexts/ConnectionContext";
 import { useDispatch, useSelector } from "react-redux";
-import { selectClientAccepted } from "../../storeServices/client/clientReducer";
+import {
+  selectClientAccepted,
+  selectClientAuthenticated,
+} from "../../storeServices/client/clientReducer";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 
 const ClientDetails = () => {
   const [hostIp, setHostIp] = useState("");
   const [inviteCode, setInviteCode] = useState("");
   const [port, setPort] = useState("");
   const clientAccepted = useSelector(selectClientAccepted);
+  const clientAuthenticated = useSelector(selectClientAuthenticated);
+
+  const navigation = useNavigation();
 
   const dispatch = useDispatch();
 
@@ -44,6 +58,58 @@ const ClientDetails = () => {
 
     connectToServer({ port: port.trim(), host: hostIp.trim() });
   };
+
+  const onPressLeave = () => {
+    dispatch({ type: "resetClient", payload: {} });
+    dispatch({ type: "clearChat", payload: {} });
+
+    // disconnect
+    navigation.goBack();
+  };
+
+  // --- reusable alert function
+  const showLeaveAlert = (onConfirm) => {
+    Alert.alert(
+      "Leave this screen?",
+      "You’re currently connected. Leaving now will end your active connection. Do you still want to continue?",
+      [
+        { text: "Stay", style: "cancel" },
+        {
+          text: "Leave",
+          onPress: () => {
+            // disconnectClient();
+            if (onConfirm) onConfirm();
+            else onPressLeave();
+          },
+        },
+      ]
+    );
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      // --- handle any navigation attempt (header back, swipe, navigate away)
+      const navSub = navigation.addListener("beforeRemove", (e) => {
+        if (!clientAuthenticated) return; // allow normal behavior
+
+        // Prevent default action
+        e.preventDefault();
+
+        showLeaveAlert(() => {
+          // Remove the listener temporarily so we can navigate after confirmation
+          dispatch({ type: "resetClient", payload: {} });
+          dispatch({ type: "clearChat", payload: {} });
+          navigation.dispatch(e.data.action);
+        });
+      });
+
+      // cleanup when screen loses focus
+      return () => {
+        navSub();
+      };
+    }, [clientAuthenticated, navigation])
+  );
+
   return (
     <View style={{ flex: 1, backgroundColor: colors.white }}>
       <View style={{ paddingHorizontal: 20 }}>
@@ -59,6 +125,7 @@ const ClientDetails = () => {
           placeholder="Enter host IP Address"
           label="IP Address"
           style={{ borderRadius: 10 }}
+          disabled={clientAuthenticated}
         />
         <Vspacer size={10} />
         <CustomInput
@@ -66,6 +133,7 @@ const ClientDetails = () => {
           placeholder="Enter Port"
           label="Port"
           style={{ borderRadius: 10 }}
+          disabled={clientAuthenticated}
         />
         {/* <Vspacer size={10} />
         <CustomInput
@@ -74,12 +142,15 @@ const ClientDetails = () => {
           label="Invite code"
           style={{ borderRadius: 10 }}
         /> */}
+
         <Vspacer size={15} />
-        <CustomButton
-          title="Request to join"
-          onPress={onPressRequest}
-          textStyle={{ ...globalStyles.font16Semibold }}
-        />
+        {!clientAuthenticated && (
+          <CustomButton
+            title="Request to join"
+            onPress={onPressRequest}
+            textStyle={{ ...globalStyles.font16Semibold }}
+          />
+        )}
       </View>
     </View>
   );

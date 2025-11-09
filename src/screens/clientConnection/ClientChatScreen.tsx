@@ -22,51 +22,6 @@ import { useSelector } from "react-redux";
 import { selectMessages } from "../../storeServices/messages/chatReducer";
 import { useConnection } from "../../contexts/ConnectionContext";
 
-// const messages = [
-//   {
-//     id: "1",
-//     deviceId: "1",
-//     name: "aeagbogu",
-//     socket: "wgdw",
-//     text: "This is crazy!!!",
-//   },
-//   {
-//     id: "2",
-//     deviceId: "2",
-//     name: "Sammy",
-//     socket: "wgdw",
-//     text: "I really didnt want to come but she insisted on me coming...",
-//   },
-//   {
-//     id: "3",
-//     deviceId: "3",
-//     name: "Wiston",
-//     socket: "wgdw",
-//     text: "This is crazy!!!",
-//   },
-//   {
-//     id: "4",
-//     deviceId: "1",
-//     name: "aeagbogu",
-//     socket: "wgdw",
-//     text: "This is crazy!!!",
-//   },
-//   {
-//     id: "5",
-//     deviceId: "5",
-//     name: "Jamie",
-//     socket: "wgdw",
-//     text: "This is crazy!!!",
-//   },
-//   {
-//     id: "6",
-//     deviceId: "7",
-//     name: "aeagbogu",
-//     socket: "wgdw",
-//     text: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Mollitia accusantium, quidem corrupti laborum dolores nobis!",
-//   },
-// ];
-
 const ClientChatScreen = () => {
   const insets = useSafeAreaInsets();
   const MESSAGES = useSelector(selectMessages);

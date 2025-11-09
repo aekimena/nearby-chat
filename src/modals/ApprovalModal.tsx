@@ -1,7 +1,10 @@
 import { Image, Modal, StyleSheet, Text, View } from "react-native";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { selectApprovalModalVisible } from "../storeServices/host/hostReducer";
+import {
+  selectApprovalModalVisible,
+  selectClientSeekingApproval,
+} from "../storeServices/host/hostReducer";
 import { selectUser } from "../storeServices/auth/authReducer";
 import { globalStyles } from "../constants/styles";
 import { LabelText } from "../components/LabelText";
@@ -14,7 +17,8 @@ import { useConnection } from "../contexts/ConnectionContext";
 export const ApprovalModal = () => {
   const user = useSelector(selectUser);
   const visible = useSelector(selectApprovalModalVisible);
-  const { clientSeekingApproval, serverSocket } = useConnection(); // user
+  const { serverSocket } = useConnection(); // user
+  const clientSeekingApproval = useSelector(selectClientSeekingApproval);
   const dispatch = useDispatch();
 
   const onClose = () => {
@@ -32,7 +36,15 @@ export const ApprovalModal = () => {
     onClose();
   };
 
-  const onReject = () => {};
+  const onReject = () => {
+    serverSocket.write(
+      JSON.stringify({
+        type: "rejected",
+        message: "Host has rejected your request!",
+      })
+    );
+    onClose();
+  };
   return (
     <Modal
       backdropColor={"rgba(0,0,0,0.05)"}
@@ -68,7 +80,7 @@ export const ApprovalModal = () => {
             />
             <CustomButton
               title="Reject"
-              onPress={() => {}}
+              onPress={onReject}
               buttonStyle={{ flex: 1, backgroundColor: colors.card }}
               textStyle={{ color: colors.textPrimary }}
               icon={

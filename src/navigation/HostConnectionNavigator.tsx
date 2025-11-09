@@ -9,10 +9,14 @@ import { globalStyles } from "../constants/styles";
 import { colors } from "../constants/colors";
 import { LeftIconHeader } from "../components/LeftIconHeader";
 import { ApprovalModal } from "../modals/ApprovalModal";
+import { useSelector } from "react-redux";
+import { selectClientAccepted } from "../storeServices/client/clientReducer";
+import { selectAcceptedClients } from "../storeServices/host/hostReducer";
 
 const Tab = createMaterialTopTabNavigator();
 
 const HostConnectionNavigator = () => {
+  const acceptedClients = useSelector(selectAcceptedClients);
   return (
     <ScreenLayout>
       <>
@@ -32,11 +36,13 @@ const HostConnectionNavigator = () => {
             component={HostDetails}
             options={{ title: "Details" }}
           />
-          <Tab.Screen
-            name={screenNames.hostChat}
-            component={HostChatScreen}
-            options={{ title: "Chat" }}
-          />
+          {acceptedClients.length > 0 && (
+            <Tab.Screen
+              name={screenNames.hostChat}
+              component={HostChatScreen}
+              options={{ title: "Chat" }}
+            />
+          )}
         </Tab.Navigator>
         <ApprovalModal />
       </>
