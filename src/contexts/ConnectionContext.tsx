@@ -32,9 +32,11 @@ export const ConnectionProvider = ({ children }) => {
 
   const dispatch = useDispatch();
 
-  const [server, setServer] = useState(null);
+  // const [server, setServer] = useState(null);
   const [client, setClient] = useState(null);
   const [serverSocket, setServerSocket] = useState(null);
+
+  const [clientSeekingApproval, setClientSeekingApproval] = useState(null);
   // const [messages, setMessages] = useState([]);
   // const [ip, setIp] = useState("0.0.0.0");
   // const [myIp, setMyIp] = useState("");
@@ -99,6 +101,8 @@ export const ConnectionProvider = ({ children }) => {
           const requestingClientData = { ...requestingClient, ...json };
           // show modal to accept with the client data
           console.log("Client wants to connect: ", requestingClientData);
+          setClientSeekingApproval(requestingClientData);
+          dispatch({ type: "setApprovalModalVisible", payload: true });
 
           return;
         }
@@ -106,19 +110,37 @@ export const ConnectionProvider = ({ children }) => {
         if (json?.type == "enter_code") {
           if (json?.code?.trim() == INVITE_CODE) {
             // add client
+
+            console.log("about to save client: ", clientSeekingApproval);
+
+            dispatch({ type: "addClient", payload: clientSeekingApproval });
+
+            socket.write(JSON.stringify({ type: "authenticated" }));
           }
           return;
         }
 
-        if (
-          json?.type == "message" &&
-          !CLIENTS.find((i) => i.deviceId == json?.deviceId)
-        ) {
-          // remome client
-          return;
-        }
+        // if (
+        //   json?.type == "message" &&
+        //   !CLIENTS.find((i) => i.deviceId == json?.deviceId)
+        // ) {
+        //   // remome client
+        //   return;
+        // }
 
         if (json?.type == "message") {
+          console.log("all clients: ", CLIENTS);
+
+          const clientExists = CLIENTS.findIndex(
+            (i) => i.deviceId == json?.deviceId
+          );
+
+          if (clientExists == -1) {
+            // remove client
+            console.log("Client doesnt exist");
+
+            return;
+          }
           dispatch({ type: "newMessage", payload: json });
         } else {
           console.log("New message from client: ", json);
@@ -142,7 +164,7 @@ export const ConnectionProvider = ({ children }) => {
       console.log(`🔑 Join Code: ${INVITE_CODE}`);
     });
 
-    setServer(newServer);
+    // setServer(newServer);
 
     newServer.on("error", (error) => {
       console.log("An error ocurred with the server", error);
@@ -152,45 +174,45 @@ export const ConnectionProvider = ({ children }) => {
       console.log("Server closed connection");
     });
 
-    const approveClient = (clientProfile) => {
-      const socket = clientProfile.socket;
-      socket.write("ENTER_CODE");
+    // const approveClient = (clientProfile) => {
+    //   const socket = clientProfile.socket;
+    //   socket.write("ENTER_CODE");
 
-      socket.on("data", (data) => {
-        const message = data.toString();
+    //   socket.on("data", (data) => {
+    //     const message = data.toString();
 
-        if (message.startsWith("CODE:")) {
-          const entered = message.split(":")[1].trim();
+    //     if (message.startsWith("CODE:")) {
+    //       const entered = message.split(":")[1].trim();
 
-          if (entered === INVITE_CODE) {
-            socket.write("APPROVED");
-            // c.push(clientProfile);
-            dispatch(addClient(clientProfile));
+    //       if (entered === INVITE_CODE) {
+    //         socket.write("APPROVED");
+    //         // c.push(clientProfile);
+    //         dispatch(addClient(clientProfile));
 
-            broadcast(`🟢 ${clientProfile.name} joined the chat`, socket);
+    //         broadcast(`🟢 ${clientProfile.name} joined the chat`, socket);
 
-            socket.on("data", (msg) => {
-              const text = msg.toString();
-              broadcast(`${clientProfile.name}: ${text}`, socket);
-            });
+    //         socket.on("data", (msg) => {
+    //           const text = msg.toString();
+    //           broadcast(`${clientProfile.name}: ${text}`, socket);
+    //         });
 
-            socket.on("close", () => {
-              removeClient(socket);
-              onClientLeave(clientProfile);
-              broadcast(`🔴 ${clientProfile.name} left the chat`, socket);
-            });
-          } else {
-            socket.write("REJECTED");
-            socket.destroy();
-          }
-        }
-      });
-    };
+    //         socket.on("close", () => {
+    //           removeClient(socket);
+    //           onClientLeave(clientProfile);
+    //           broadcast(`🔴 ${clientProfile.name} left the chat`, socket);
+    //         });
+    //       } else {
+    //         socket.write("REJECTED");
+    //         socket.destroy();
+    //       }
+    //     }
+    //   });
+    // };
 
     const removeClient = (socket) => {
       // const index = clients.findIndex((c) => c.socket === socket);
       // if (index !== -1) clients.splice(index, 1);
-      dispatch(removeClient(socket));
+      // dispatch(removeClient(socket));
     };
 
     const broadcast = (message, sender) => {
@@ -210,7 +232,7 @@ export const ConnectionProvider = ({ children }) => {
 
     // setServer(newServer);
 
-    return { server, approveClient };
+    // return { approveClient };
   };
 
   // Connect as client
@@ -264,7 +286,7 @@ export const ConnectionProvider = ({ children }) => {
       client.write(
         JSON.stringify({
           name: user?.name,
-          image: user?.image,
+          // image: user?.image, // for now
           // message: text,
           deviceId: user?.deviceId,
           id: Date.now().toString(),
@@ -296,6 +318,22 @@ export const ConnectionProvider = ({ children }) => {
       const decoded = Buffer.from(data).toString("utf-8");
 
       const json = JSON.parse(decoded);
+
+      if (json?.type == "accepted") {
+        dispatch({ type: "setClientAccepted", payload: "true" });
+        return;
+      }
+      if (json?.type == "authenticated") {
+        // dispatch({ type: "setClientAccepted", payload: "true" });
+        dispatch({ type: "setAuthModalVisible", payload: false });
+        ToastAndroid.show(
+          "Welcome to the chat! you have been invited",
+          ToastAndroid.BOTTOM
+        );
+
+        return;
+      }
+
       if (json?.type == "message") {
         dispatch({ type: "newMessage", payload: json });
       } else {
@@ -372,7 +410,8 @@ export const ConnectionProvider = ({ children }) => {
         connectToServer,
         sendMessage,
         client,
-        server,
+        serverSocket,
+        clientSeekingApproval,
         // messages,
         // details,
       }}

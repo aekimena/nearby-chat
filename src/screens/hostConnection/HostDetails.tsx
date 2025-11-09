@@ -37,7 +37,7 @@ const HostDetails = () => {
     });
     startServer();
 
-    dispatch({ type: "setApprovalModalVisible", payload: true });
+    // dispatch({ type: "setApprovalModalVisible", payload: true });
   }, []);
 
   return (

@@ -9,16 +9,30 @@ import { Vspacer } from "../components/Vspacer";
 import { CustomButton } from "../components/CustomButton";
 import { colors } from "../constants/colors";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { useConnection } from "../contexts/ConnectionContext";
 
 export const ApprovalModal = () => {
   const user = useSelector(selectUser);
   const visible = useSelector(selectApprovalModalVisible);
+  const { clientSeekingApproval, serverSocket } = useConnection(); // user
   const dispatch = useDispatch();
 
   const onClose = () => {
     // reject client
     dispatch({ type: "setApprovalModalVisible", payload: false });
   };
+
+  const onAccept = () => {
+    dispatch({ type: "acceptClient", payload: clientSeekingApproval });
+    serverSocket.write(
+      JSON.stringify({
+        type: "accepted",
+      })
+    );
+    onClose();
+  };
+
+  const onReject = () => {};
   return (
     <Modal
       backdropColor={"rgba(0,0,0,0.05)"}
@@ -40,7 +54,7 @@ export const ApprovalModal = () => {
             />
             <Vspacer size={5} />
             <LabelText
-              title={`${user?.name}, ${user?.deviceId} wants to join`}
+              title={`${clientSeekingApproval?.name}, ${clientSeekingApproval?.deviceId} wants to join`}
               style={{ ...globalStyles.font20Semibold, textAlign: "center" }}
             />
           </View>
@@ -48,7 +62,7 @@ export const ApprovalModal = () => {
           <View style={{ ...globalStyles.flexRow, gap: 15 }}>
             <CustomButton
               title="Accept"
-              onPress={() => {}}
+              onPress={onAccept}
               buttonStyle={{ flex: 1 }}
               icon={<Ionicons name="checkmark-sharp" size={20} color="#fff" />}
             />

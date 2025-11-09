@@ -28,6 +28,9 @@ const hostReducer = (state = initialState, action) => {
         authenticatedClients: state.authenticatedClients.filter(
           (i) => i.socket !== action.payload
         ),
+        acceptedClients: state.acceptedClients.filter(
+          (i) => i.socket !== action.payload
+        ),
       };
     case "setPort":
       return { ...state, port: action.payload };

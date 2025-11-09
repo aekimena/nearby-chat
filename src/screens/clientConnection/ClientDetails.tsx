@@ -21,16 +21,16 @@ const ClientDetails = () => {
   const { connectToServer } = useConnection();
 
   const onPressRequest = () => {
-    dispatch({ type: "setAuthModalVisible", payload: true });
-    return;
+    // dispatch({ type: "setAuthModalVisible", payload: true });
+    // return;
     if (!hostIp.trim()) {
       ToastAndroid.show("Host IP is required", ToastAndroid.BOTTOM);
       return;
     }
-    if (!inviteCode.trim() || inviteCode.length < 4) {
-      ToastAndroid.show("Invite code is required", ToastAndroid.BOTTOM);
-      return;
-    }
+    // if (!inviteCode.trim() || inviteCode.length < 4) {
+    //   ToastAndroid.show("Invite code is required", ToastAndroid.BOTTOM);
+    //   return;
+    // }
 
     if (!port.trim() || port.length < 4) {
       ToastAndroid.show("Port is required", ToastAndroid.BOTTOM);
