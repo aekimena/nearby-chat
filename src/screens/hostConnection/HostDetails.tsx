@@ -28,7 +28,7 @@ import * as Clipboard from "expo-clipboard";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 
 const HostDetails = () => {
-  const { startServer } = useConnection();
+  const { startServer, server, shutdownServer } = useConnection();
 
   // const { approveClient } = startServer();
 
@@ -93,6 +93,12 @@ const HostDetails = () => {
           // Remove the listener temporarily so we can navigate after confirmation
           dispatch({ type: "resetHost", payload: {} });
           dispatch({ type: "clearChat", payload: {} });
+
+          // server.close(() => {
+          //   console.log("Server stopped listening for connections.");
+          // });
+          shutdownServer();
+
           navigation.dispatch(e.data.action);
         });
       });
@@ -155,14 +161,10 @@ const HostDetails = () => {
                       key={index}
                       style={{ ...globalStyles.flexRow, gap: 15 }}
                     >
-                      <View
-                        style={{
-                          height: 50,
-                          width: 50,
-                          borderRadius: 50,
-                          backgroundColor: colors.card,
-                        }}
-                      ></View>
+                      <Image
+                        source={{ uri: `data:image/png;base64,${item?.image}` }}
+                        style={{ height: 50, width: 50, borderRadius: 50 }}
+                      />
                       <View>
                         <LabelText
                           title={item?.name}

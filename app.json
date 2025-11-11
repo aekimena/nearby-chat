@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "blueChat",
+    "name": "NearbyChat",
     "slug": "blueChat",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -25,9 +25,7 @@
         "android.permission.BLUETOOTH",
         "android.permission.BLUETOOTH_ADMIN",
         "android.permission.BLUETOOTH_CONNECT",
-        "android.permission.BLUETOOTH",
-        "android.permission.BLUETOOTH_ADMIN",
-        "android.permission.BLUETOOTH_CONNECT"
+        "android.permission.RECORD_AUDIO"
       ],
       "package": "com.arinzemmanuel.blueChat"
     },
@@ -42,10 +40,7 @@
         "react-native-ble-plx",
         {
           "isBackgroundEnabled": true,
-          "modes": [
-            "peripheral",
-            "central"
-          ],
+          "modes": ["peripheral", "central"],
           "bluetoothAlwaysPermission": "Allow $(PRODUCT_NAME) to connect to bluetooth devices"
         }
       ],
@@ -56,6 +51,11 @@
         }
       ],
       "expo-font"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "4f707bae-b094-4716-a291-fbfdf5590cc5"
+      }
+    }
   }
 }

@@ -2,12 +2,15 @@ import { StatusBar } from "expo-status-bar";
 import { StyleSheet, Text, View } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import AppNavigator from "./src/navigation/AppNavigator";
-import { BleProvider } from "./src/contexts/BleContext";
 import { ConnectionProvider } from "./src/contexts/ConnectionContext";
 import { Provider } from "react-redux";
-import store from "./src/store/configureStore";
+import store, { persistor } from "./src/store/configureStore";
 import { useFonts } from "expo-font";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { PersistGate } from "redux-persist/integration/react";
+import * as SplashScreen from "expo-splash-screen";
+
+SplashScreen.preventAutoHideAsync();
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -21,15 +24,15 @@ export default function App() {
   }
   return (
     <Provider store={store}>
-      <SafeAreaProvider>
-        <ConnectionProvider>
-          {/* <BleProvider> */}
-          <NavigationContainer>
-            <AppNavigator />
-          </NavigationContainer>
-          {/* </BleProvider> */}
-        </ConnectionProvider>
-      </SafeAreaProvider>
+      <PersistGate loading={null} persistor={persistor}>
+        <SafeAreaProvider>
+          <ConnectionProvider>
+            <NavigationContainer onReady={() => SplashScreen.hide()}>
+              <AppNavigator />
+            </NavigationContainer>
+          </ConnectionProvider>
+        </SafeAreaProvider>
+      </PersistGate>
     </Provider>
   );
 }

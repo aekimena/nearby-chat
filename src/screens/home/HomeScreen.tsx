@@ -1,9 +1,8 @@
-import { Button, Image, Pressable, StyleSheet, Text, View } from "react-native";
-import React, { useEffect } from "react";
+import { StyleSheet, Text, View } from "react-native";
+import React, { useEffect, useState } from "react";
 
 import { ScreenLayout } from "../../components/layout/ScreenLayout";
 import { useDispatch, useSelector } from "react-redux";
-import { selectUser } from "../../storeServices/auth/authReducer";
 import { Header } from "../../components/home/Header";
 import { Vspacer } from "../../components/Vspacer";
 import { colors } from "../../constants/colors";
@@ -13,17 +12,14 @@ import { ConnectionCard } from "../../components/home/ConnectionCard";
 import { useNavigation } from "@react-navigation/native";
 import { screenNames } from "../../navigation/routes";
 import { generateInviteCode, generatePort } from "../../utils/networkUtils";
-import { useConnection } from "../../contexts/ConnectionContext";
-import { NetworkInfo } from "react-native-network-info";
+import DisclaimerModal from "../../modals/DisclaimerModal";
 
 const HomeScreen = () => {
-  const user = useSelector(selectUser);
-
   const navigation = useNavigation();
 
-  const dispatch = useDispatch();
+  const [isModalVisible, setModalVisible] = useState(false);
 
-  const { startServer } = useConnection();
+  const dispatch = useDispatch();
 
   const onPressHost = () => {
     const PORT = generatePort();
@@ -39,17 +35,9 @@ const HomeScreen = () => {
     navigation.navigate(screenNames.client);
   };
 
-  // useEffect(() => {
-  //   // Get Local IP
-  //   NetworkInfo.getIPAddress().then((ipAddress) => {
-  //     console.log("IP Address: ", ipAddress);
-  //   });
-
-  //   // Get IPv4 IP (priority: WiFi first, cellular second)
-  //   NetworkInfo.getIPV4Address().then((ipv4Address) => {
-  //     console.log("IPV4 Address: ", ipv4Address);
-  //   });
-  // }, []);
+  useEffect(() => {
+    setModalVisible(true);
+  }, []);
 
   return (
     <ScreenLayout>
@@ -75,6 +63,10 @@ const HomeScreen = () => {
             onPress={() => onPressJoin()}
           />
         </View>
+        <DisclaimerModal
+          onClose={() => setModalVisible(false)}
+          visible={isModalVisible}
+        />
       </View>
     </ScreenLayout>
   );

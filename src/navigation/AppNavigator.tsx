@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from "react-native";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import MainNavigator from "./MainNavigator";
 import { screenNames } from "./routes";
@@ -11,6 +11,7 @@ const Stack = createNativeStackNavigator();
 
 const AppNavigator = () => {
   const user = useSelector(selectUser);
+
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {user ? (

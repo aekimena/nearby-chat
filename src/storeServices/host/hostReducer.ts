@@ -27,10 +27,10 @@ const hostReducer = (state = initialState, action) => {
       return {
         ...state,
         authenticatedClients: state.authenticatedClients.filter(
-          (i) => i.socket !== action.payload
+          (i) => i.id !== action.payload
         ),
         acceptedClients: state.acceptedClients.filter(
-          (i) => i.socket !== action.payload
+          (i) => i.id !== action.payload
         ),
       };
 

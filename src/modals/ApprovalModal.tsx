@@ -31,7 +31,7 @@ export const ApprovalModal = () => {
     serverSocket.write(
       JSON.stringify({
         type: "accepted",
-      })
+      }) + "\n"
     );
     onClose();
   };
@@ -41,16 +41,19 @@ export const ApprovalModal = () => {
       JSON.stringify({
         type: "rejected",
         message: "Host has rejected your request!",
-      })
+      }) + "\n"
     );
+    serverSocket.destroy();
     onClose();
   };
   return (
     <Modal
       backdropColor={"rgba(0,0,0,0.05)"}
       visible={visible}
-      onDismiss={onClose}
-      onRequestClose={onClose}
+      onDismiss={() => {}}
+      onRequestClose={() => {
+        console.log("requested to close");
+      }}
       animationType="fade"
     >
       <View
@@ -61,9 +64,12 @@ export const ApprovalModal = () => {
         >
           <View style={{ ...globalStyles.allCenter }}>
             <Image
-              source={{ uri: `data:image/png;base64,${user?.image}` }}
+              source={{
+                uri: `data:image/png;base64,${clientSeekingApproval?.image}`,
+              }}
               style={{ height: 120, width: 120, borderRadius: 100 }}
             />
+
             <Vspacer size={5} />
             <LabelText
               title={`${clientSeekingApproval?.name}, ${clientSeekingApproval?.deviceId} wants to join`}

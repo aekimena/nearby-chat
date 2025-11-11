@@ -32,7 +32,7 @@ const ClientDetails = () => {
 
   const dispatch = useDispatch();
 
-  const { connectToServer } = useConnection();
+  const { connectToServer, client } = useConnection();
 
   const onPressRequest = () => {
     // dispatch({ type: "setAuthModalVisible", payload: true });
@@ -99,6 +99,11 @@ const ClientDetails = () => {
           // Remove the listener temporarily so we can navigate after confirmation
           dispatch({ type: "resetClient", payload: {} });
           dispatch({ type: "clearChat", payload: {} });
+          if (client) {
+            client.end(); // Gracefully closes connection
+            client.destroy(); // Ensures socket is fully closed
+            console.log("Client disconnected.");
+          }
           navigation.dispatch(e.data.action);
         });
       });

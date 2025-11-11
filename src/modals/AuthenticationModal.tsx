@@ -32,7 +32,9 @@ export const AuthenticationModal = () => {
       return;
     }
 
-    client.write(JSON.stringify({ code: inviteCode, type: "enter_code" }));
+    client.write(
+      JSON.stringify({ code: inviteCode, type: "enter_code" }) + "\n"
+    );
     // onClose();
     // dispatch({ type: "setAuthModalVisible", payload: false });
   };
@@ -40,8 +42,8 @@ export const AuthenticationModal = () => {
     <Modal
       backdropColor={"rgba(0,0,0,0.05)"}
       visible={visible}
-      onDismiss={onClose}
-      onRequestClose={onClose}
+      onDismiss={() => {}}
+      onRequestClose={() => {}}
       animationType="fade"
     >
       <View

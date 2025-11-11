@@ -21,10 +21,13 @@ import { MessageItem } from "../../components/chat/MessageItem";
 import { useSelector } from "react-redux";
 import { selectMessages } from "../../storeServices/messages/chatReducer";
 import { useConnection } from "../../contexts/ConnectionContext";
+import { selectClientAuthenticated } from "../../storeServices/client/clientReducer";
+import { selectClients } from "../../storeServices/host/hostReducer";
 
 const HostChatScreen = () => {
   const insets = useSafeAreaInsets();
   const MESSAGES = useSelector(selectMessages);
+  const CLIENTS = useSelector(selectClients);
 
   const { sendMessage } = useConnection();
 
@@ -38,33 +41,48 @@ const HostChatScreen = () => {
     sendMessage(input);
     setInput("");
   };
+
+  const getChatHeaderTitle = () => {
+    if (CLIENTS.length == 1) return `${CLIENTS[0]?.name}`;
+    if (CLIENTS.length == 2)
+      return `${CLIENTS[0]?.name} and ${CLIENTS[1]?.name}`;
+    if (CLIENTS.length > 2)
+      return `${CLIENTS[0]?.name}, ${CLIENTS[1]?.name}, and ${
+        CLIENTS.length - 2
+      } other(s)`;
+    return ``;
+  };
   return (
     <View style={{ flex: 1, backgroundColor: colors.white }}>
       <View style={styles.chatHeader}>
-        <View style={{ flex: 1, ...globalStyles.flexRow, gap: 10 }}>
-          <View style={{ height: 50, width: 50, borderRadius: 50 }}>
-            <Image
-              source={{ uri: "https://www.loremfaces.net/96/id/3.jpg" }}
-              style={{ height: "100%", width: "100%", borderRadius: 100 }}
-            />
+        {CLIENTS.length > 0 && (
+          <View style={{ flex: 1, ...globalStyles.flexRow, gap: 10 }}>
+            <View style={{ height: 50, width: 50, borderRadius: 50 }}>
+              <Image
+                source={{ uri: `data:image/png;base64,${CLIENTS[0]?.image}` }}
+                style={{ height: "100%", width: "100%", borderRadius: 100 }}
+              />
 
-            <Image
-              source={{ uri: "https://www.loremfaces.net/96/id/2.jpg" }}
-              style={styles.secondHeaderAvatar}
-            />
-          </View>
+              {CLIENTS.length > 1 && (
+                <Image
+                  source={{ uri: `data:image/png;base64,${CLIENTS[1]?.image}` }}
+                  style={styles.secondHeaderAvatar}
+                />
+              )}
+            </View>
 
-          <View style={{ flex: 1 }}>
-            <LabelText
-              title="Name user, second user and 1 other"
-              style={{ ...globalStyles.font16Semibold }}
-            />
-            <LabelText
-              title="Connected"
-              style={{ color: colors.textSecondary, fontSize: 12 }}
-            />
+            <View style={{ flex: 1 }}>
+              <LabelText
+                title={getChatHeaderTitle()}
+                style={{ ...globalStyles.font16Semibold }}
+              />
+              <LabelText
+                title="Connected"
+                style={{ color: colors.textSecondary, fontSize: 12 }}
+              />
+            </View>
           </View>
-        </View>
+        )}
       </View>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
