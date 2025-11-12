@@ -23,6 +23,8 @@ import { selectMessages } from "../../storeServices/messages/chatReducer";
 import { useConnection } from "../../contexts/ConnectionContext";
 import { selectClientAuthenticated } from "../../storeServices/client/clientReducer";
 import { selectClients } from "../../storeServices/host/hostReducer";
+import { ScreenLayout } from "../../components/layout/ScreenLayout";
+import { LeftIconHeader } from "../../components/LeftIconHeader";
 
 const HostChatScreen = () => {
   const insets = useSafeAreaInsets();
@@ -53,68 +55,73 @@ const HostChatScreen = () => {
     return ``;
   };
   return (
-    <View style={{ flex: 1, backgroundColor: colors.white }}>
-      <View style={styles.chatHeader}>
-        {CLIENTS.length > 0 && (
-          <View style={{ flex: 1, ...globalStyles.flexRow, gap: 10 }}>
-            <View style={{ height: 50, width: 50, borderRadius: 50 }}>
-              <Image
-                source={{ uri: `data:image/png;base64,${CLIENTS[0]?.image}` }}
-                style={{ height: "100%", width: "100%", borderRadius: 100 }}
-              />
-
-              {CLIENTS.length > 1 && (
+    <ScreenLayout>
+      <View style={{ flex: 1 }}>
+        <LeftIconHeader title="Chat" />
+        <View style={styles.chatHeader}>
+          {CLIENTS.length > 0 && (
+            <View style={{ flex: 1, ...globalStyles.flexRow, gap: 10 }}>
+              <View style={{ height: 50, width: 50, borderRadius: 50 }}>
                 <Image
-                  source={{ uri: `data:image/png;base64,${CLIENTS[1]?.image}` }}
-                  style={styles.secondHeaderAvatar}
+                  source={{ uri: `data:image/png;base64,${CLIENTS[0]?.image}` }}
+                  style={{ height: "100%", width: "100%", borderRadius: 100 }}
                 />
-              )}
-            </View>
 
-            <View style={{ flex: 1 }}>
-              <LabelText
-                title={getChatHeaderTitle()}
-                style={{ ...globalStyles.font16Semibold }}
-              />
-              <LabelText
-                title="Connected"
-                style={{ color: colors.textSecondary, fontSize: 12 }}
-              />
+                {CLIENTS.length > 1 && (
+                  <Image
+                    source={{
+                      uri: `data:image/png;base64,${CLIENTS[1]?.image}`,
+                    }}
+                    style={styles.secondHeaderAvatar}
+                  />
+                )}
+              </View>
+
+              <View style={{ flex: 1 }}>
+                <LabelText
+                  title={getChatHeaderTitle()}
+                  style={{ ...globalStyles.font16Semibold }}
+                />
+                <LabelText
+                  title="Connected"
+                  style={{ color: colors.textSecondary, fontSize: 12 }}
+                />
+              </View>
             </View>
-          </View>
-        )}
-      </View>
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={"height"}
-        keyboardVerticalOffset={15 + insets.bottom}
-      >
-        <FlatList
-          data={MESSAGES}
-          renderItem={({ item }) => <MessageItem item={item} />}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.flatlist}
-        />
-        <View
-          style={{
-            paddingBottom: insets.bottom + 15,
-            ...styles.chatContainer,
-          }}
-        >
-          <TextInput
-            style={styles.textInput}
-            placeholder="Start typing..."
-            placeholderTextColor={colors.textSecondary}
-            multiline
-            onChangeText={setInput}
-            value={input}
-          />
-          <TouchableOpacity style={styles.sendBtn} onPress={onPressSend}>
-            <FontAwesome name="send" size={24} color="#fff" />
-          </TouchableOpacity>
+          )}
         </View>
-      </KeyboardAvoidingView>
-    </View>
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={"height"}
+          keyboardVerticalOffset={insets.bottom}
+        >
+          <FlatList
+            data={MESSAGES}
+            renderItem={({ item }) => <MessageItem item={item} />}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.flatlist}
+          />
+          <View
+            style={{
+              paddingBottom: insets.bottom + 15,
+              ...styles.chatContainer,
+            }}
+          >
+            <TextInput
+              style={styles.textInput}
+              placeholder="Start typing..."
+              placeholderTextColor={colors.textSecondary}
+              multiline
+              onChangeText={setInput}
+              value={input}
+            />
+            <TouchableOpacity style={styles.sendBtn} onPress={onPressSend}>
+              <FontAwesome name="send" size={24} color="#fff" />
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      </View>
+    </ScreenLayout>
   );
 };
 

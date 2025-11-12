@@ -5,6 +5,7 @@ import Feather from "@expo/vector-icons/Feather";
 import { LabelText } from "./LabelText";
 import { Vspacer } from "./Vspacer";
 import { colors } from "../constants/colors";
+import { useNavigation } from "@react-navigation/native";
 
 export const LeftIconHeader = ({
   title,
@@ -13,6 +14,7 @@ export const LeftIconHeader = ({
   title: string;
   showSeparator?: boolean;
 }) => {
+  const navigation = useNavigation();
   return (
     <View
       style={{
@@ -24,7 +26,7 @@ export const LeftIconHeader = ({
       <Vspacer size={5} />
 
       <View style={{ paddingHorizontal: 20, ...globalStyles.flexRow, gap: 10 }}>
-        <Pressable>
+        <Pressable onPress={() => navigation.goBack()}>
           <Feather name="chevron-left" size={24} color="black" />
         </Pressable>
         <LabelText title={title} style={{ ...globalStyles.font18SemiBold }} />

@@ -20,6 +20,10 @@ import {
   selectClientAuthenticated,
 } from "../../storeServices/client/clientReducer";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { ScreenLayout } from "../../components/layout/ScreenLayout";
+import { LeftIconHeader } from "../../components/LeftIconHeader";
+import { GoToChatBox } from "../../components/home/GoToChatBox";
+import { screenNames } from "../../navigation/routes";
 
 const ClientDetails = () => {
   const [hostIp, setHostIp] = useState("");
@@ -51,10 +55,10 @@ const ClientDetails = () => {
       return;
     }
 
-    if (clientAccepted == "true") {
-      dispatch({ type: "setAuthModalVisible", payload: true });
-      return;
-    }
+    // if (clientAccepted == "true") {
+    //   dispatch({ type: "setAuthModalVisible", payload: true });
+    //   return;
+    // }
 
     connectToServer({ port: port.trim(), host: hostIp.trim() });
   };
@@ -116,31 +120,33 @@ const ClientDetails = () => {
   );
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.white }}>
-      <View style={{ paddingHorizontal: 20 }}>
-        <Vspacer size={20} />
-        <LabelText
-          title="Enter Details"
-          style={{ ...globalStyles.font20Semibold, fontSize: 22 }}
-        />
-        <Vspacer />
+    <ScreenLayout>
+      <View style={{ flex: 1 }}>
+        <LeftIconHeader title="Join a Connection" />
+        <View style={{ paddingHorizontal: 20 }}>
+          <Vspacer size={5} />
+          <LabelText
+            title="Enter Details"
+            style={{ ...globalStyles.font20Semibold, fontSize: 22 }}
+          />
+          <Vspacer />
 
-        <CustomInput
-          onChangeText={setHostIp}
-          placeholder="Enter host IP Address"
-          label="IP Address"
-          style={{ borderRadius: 10 }}
-          disabled={clientAuthenticated}
-        />
-        <Vspacer size={10} />
-        <CustomInput
-          onChangeText={setPort}
-          placeholder="Enter Port"
-          label="Port"
-          style={{ borderRadius: 10 }}
-          disabled={clientAuthenticated}
-        />
-        {/* <Vspacer size={10} />
+          <CustomInput
+            onChangeText={setHostIp}
+            placeholder="Enter host IP Address"
+            label="IP Address"
+            style={{ borderRadius: 10 }}
+            disabled={clientAuthenticated}
+          />
+          <Vspacer size={10} />
+          <CustomInput
+            onChangeText={setPort}
+            placeholder="Enter Port"
+            label="Port"
+            style={{ borderRadius: 10 }}
+            disabled={clientAuthenticated}
+          />
+          {/* <Vspacer size={10} />
         <CustomInput
           onChangeText={setInviteCode}
           placeholder="Enter host invite code."
@@ -148,16 +154,27 @@ const ClientDetails = () => {
           style={{ borderRadius: 10 }}
         /> */}
 
-        <Vspacer size={15} />
-        {!clientAuthenticated && (
-          <CustomButton
-            title="Request to join"
-            onPress={onPressRequest}
-            textStyle={{ ...globalStyles.font16Semibold }}
-          />
-        )}
+          {!clientAuthenticated && (
+            <>
+              <Vspacer size={15} />
+              <CustomButton
+                title="Request to join"
+                onPress={onPressRequest}
+                textStyle={{ ...globalStyles.font16Semibold }}
+              />
+            </>
+          )}
+          {clientAuthenticated && (
+            <>
+              <Vspacer size={20} />
+              <GoToChatBox
+                onPress={() => navigation.navigate(screenNames.clientChat)}
+              />
+            </>
+          )}
+        </View>
       </View>
-    </View>
+    </ScreenLayout>
   );
 };
 

@@ -32,6 +32,7 @@ const DisclaimerModal = ({
       onDismiss={onClose}
       onRequestClose={onClose}
       animationType="fade"
+      // statusBarTranslucent={false}
     >
       <View
         style={{ flex: 1, justifyContent: "center", paddingHorizontal: 20 }}

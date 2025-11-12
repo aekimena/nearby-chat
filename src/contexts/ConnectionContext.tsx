@@ -291,6 +291,10 @@ export const ConnectionProvider = ({ children }) => {
 
     client.on("close", function () {
       console.log("Connection closed!");
+      client.destroy(); // close client connection
+      dispatch({ type: "resetClient", payload: {} });
+      dispatch({ type: "clearChat", payload: {} });
+      ToastAndroid.show("Connection closed by server", ToastAndroid.BOTTOM);
     });
   };
 

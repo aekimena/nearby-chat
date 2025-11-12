@@ -26,6 +26,10 @@ import { NetworkInfo } from "react-native-network-info";
 import { DetailsBox } from "../../components/chat/DetailsBox";
 import * as Clipboard from "expo-clipboard";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { ScreenLayout } from "../../components/layout/ScreenLayout";
+import { LeftIconHeader } from "../../components/LeftIconHeader";
+import { GoToChatBox } from "../../components/home/GoToChatBox";
+import { screenNames } from "../../navigation/routes";
 
 const HostDetails = () => {
   const { startServer, server, shutdownServer } = useConnection();
@@ -111,82 +115,92 @@ const HostDetails = () => {
   );
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.white }}>
-      <ScrollView>
-        <Vspacer size={20} />
-        <View style={{ paddingHorizontal: 20 }}>
-          <View style={{ ...globalStyles.flexRow, gap: 10 }}>
-            <Image
-              source={{
-                uri: "https://img.icons8.com/color/48/rfid-signal.png",
-              }}
-              style={{ height: 40, width: 40 }}
-            />
-            <LabelText
-              title="You are hosting a chat!"
-              style={{ ...globalStyles.font20Semibold, fontSize: 24 }}
-            />
-          </View>
-          <Vspacer size={20} />
+    <ScreenLayout>
+      <View style={{ flex: 1 }}>
+        <LeftIconHeader title="Host a Connection" />
+        <ScrollView>
+          <Vspacer size={5} />
+          <View style={{ paddingHorizontal: 20 }}>
+            <View style={{ ...globalStyles.flexRow, gap: 10 }}>
+              <Image
+                source={{
+                  uri: "https://img.icons8.com/color/48/rfid-signal.png",
+                }}
+                style={{ height: 40, width: 40 }}
+              />
+              <LabelText
+                title="You are hosting a chat!"
+                style={{ ...globalStyles.font20Semibold, fontSize: 24 }}
+              />
+            </View>
+            <Vspacer size={20} />
 
-          <View style={{ gap: 15 }}>
-            <DetailsBox
-              label="IP Address:"
-              title={IP || "..."}
-              onCopy={() => copyToClipboard(IP || "")}
-            />
-            <DetailsBox
-              label="Port:"
-              title={PORT}
-              onCopy={() => copyToClipboard(PORT)}
-            />
-            <DetailsBox
-              label="Invite Code:"
-              title={INVITE_CODE}
-              onCopy={() => copyToClipboard(INVITE_CODE)}
-            />
-          </View>
-          {CLIENTS.length > 0 && (
-            <>
-              <Vspacer size={20} />
-              <View>
-                <LabelText
-                  title="Connected Users"
-                  style={{ ...globalStyles.font18SemiBold }}
+            <View style={{ gap: 15 }}>
+              <DetailsBox
+                label="IP Address:"
+                title={IP || "..."}
+                onCopy={() => copyToClipboard(IP || "")}
+              />
+              <DetailsBox
+                label="Port:"
+                title={PORT}
+                onCopy={() => copyToClipboard(PORT)}
+              />
+              <DetailsBox
+                label="Invite Code:"
+                title={INVITE_CODE}
+                onCopy={() => copyToClipboard(INVITE_CODE)}
+              />
+            </View>
+            {CLIENTS.length > 0 && (
+              <>
+                <Vspacer size={20} />
+                <GoToChatBox
+                  onPress={() => navigation.navigate(screenNames.hostChat)}
                 />
-                <Vspacer size={10} />
+
+                <Vspacer size={20} />
                 <View>
-                  {CLIENTS.map((item, index) => (
-                    <Pressable
-                      key={index}
-                      style={{ ...globalStyles.flexRow, gap: 15 }}
-                    >
-                      <Image
-                        source={{ uri: `data:image/png;base64,${item?.image}` }}
-                        style={{ height: 50, width: 50, borderRadius: 50 }}
-                      />
-                      <View>
-                        <LabelText
-                          title={item?.name}
-                          style={{ ...globalStyles.font16Semibold }}
-                        />
-                        <LabelText
-                          title={item?.deviceId}
-                          style={{
-                            ...globalStyles.font12Medium,
-                            color: colors.textSecondary,
+                  <LabelText
+                    title="Connected Users"
+                    style={{ ...globalStyles.font18SemiBold }}
+                  />
+                  <Vspacer size={10} />
+                  <View>
+                    {CLIENTS.map((item, index) => (
+                      <Pressable
+                        key={index}
+                        style={{ ...globalStyles.flexRow, gap: 15 }}
+                      >
+                        <Image
+                          source={{
+                            uri: `data:image/png;base64,${item?.image}`,
                           }}
+                          style={{ height: 50, width: 50, borderRadius: 50 }}
                         />
-                      </View>
-                    </Pressable>
-                  ))}
+                        <View>
+                          <LabelText
+                            title={item?.name}
+                            style={{ ...globalStyles.font16Semibold }}
+                          />
+                          <LabelText
+                            title={item?.deviceId}
+                            style={{
+                              ...globalStyles.font12Medium,
+                              color: colors.textSecondary,
+                            }}
+                          />
+                        </View>
+                      </Pressable>
+                    ))}
+                  </View>
                 </View>
-              </View>
-            </>
-          )}
-        </View>
-      </ScrollView>
-    </View>
+              </>
+            )}
+          </View>
+        </ScrollView>
+      </View>
+    </ScreenLayout>
   );
 };
 
